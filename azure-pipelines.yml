@@ -32,4 +32,11 @@ steps:
     script: |
       cd MauiApp1/MauiApp1
       dotnet publish -f net8.0-windows10.0.19041.0 -c Release
+- task: TrustedSigning@0
+  inputs:
+    AzureTenantID: '8b783e59-1815-452d-8641-a9be6c6fd55d'
+    AzureClientSecret: 'd078c240-a2a2-4049-9113-f8d5e59178e6'
+    Endpoint: 'https://eus.codesigning.azure.net/'
+    CertificateProfileName: 'MSIXSign'
+    FileDigest: 'SHA256'
 
