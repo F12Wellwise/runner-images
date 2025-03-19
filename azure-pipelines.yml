@@ -1,0 +1,57 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- main
+
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: UseDotNet@2
+  displayName: Install .NET
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
+
+- task: Bash@3
+  displayName: Install MAUI
+  inputs:
+    targetType: 'inline'
+    script: |
+      dotnet nuget locals all --clear 
+      dotnet workload install maui --source https://aka.ms/dotnet6/nuget/index.json --source https://api.nuget.org/v3/index.json
+      dotnet workload install android ios maccatalyst tvos macos maui wasm-tools --source https://aka.ms/dotnet6/nuget/index.json --source https://api.nuget.org/v3/index.json
+
+- task: Bash@3
+  displayName: Build MAUI App
+  inputs:
+    targetType: 'inline'
+    script: |
+      cd MauiApp1/MauiApp1
+      dotnet publish -f net8.0-windows10.0.19041.0 -c Release
+- task: TrustedSigning@0
+  displayName: Sign with Trusted Signing
+  inputs:
+    AzureTenantID: '$(8b783e59-1815-452d-8641-a9be6c6fd55d)'
+    AzureClientID: '$(d078c240-a2a2-4049-9113-f8d5e59178e6)'
+    Endpoint: 'https://eus.codesigning.azure.net/'
+    TrustedSigningAccountName: 'VHCertSigning'
+    CertificateProfileName: 'MSIXSign'
+    FilesFolder: '$(Build.SourcesDirectory)/MauiApp1/MauiApp1/bin/Release/net8.0-windows10.0.19041.0/win10-x64/AppPackages/'
+    FilesFolderFilter: 'msix'
+    FilesFolderRecurse: true
+    FilesFolderDepth: 1
+    FileDigest: 'SHA256'
+    TimestampRfc3161: 'http://timestamp.acs.microsoft.com'
+    TimestampDigest: 'SHA256'
